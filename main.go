@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+type Chat struct {
+	RoomNumber string
+	UserName   string
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -21,5 +26,12 @@ func main() {
 
 func chat(writer http.ResponseWriter, request *http.Request) {
 	template := template.Must(template.ParseFiles("templates/chat.html"))
-	template.Execute(writer, nil)
+
+	if request.Method == "POST" {
+		roomNumber := request.FormValue("roomNumber")
+		nickName := request.FormValue("nickName")
+		template.Execute(writer, Chat{roomNumber, nickName})
+	} else {
+		template.Execute(writer, Chat{})
+	}
 }

@@ -3,9 +3,43 @@
     <head>
         <meta charset="UTF-8">
         <title>Chat for friends</title>
+        <link rel="stylesheet" href="/static/css/mdb.min.css"/>
     </head>
     <body>
-       <div id="divId">Hello World</div>
+        <div class="bg-image" style="background-image: url('/static/images/chat.jpg'); height: 100vh;">
+            <div class="container">
+                <div class="p-3 mb-0 text-black text-center" style = "background-color:#DCEDC8;">
+                    <form id ="room-form" class="text-center border border-light p-5" action="/chat" method="POST">
+                        <div class="form-outline mb-4 bg-light text-black">
+                            <input type="text" name="roomNumber" id="roomNumber" class="form-control text-black" />
+                            <label class="form-label text-black" for="roomNumber">Room number</label>
+                        </div>
+                        <div class="form-outline mb-4 bg-light text-black">
+                            <input type="text" name="nickName" id="nickName" class="form-control text-black" />
+                            <label class="form-label text-black" for="nickName">Nickname</label>
+                        </div>
+                        <button id="roomButton" type="submit" class="btn btn-primary btn-block">Log in</button>
+                    </form>  
+                </div>
+                <form id="message-form" hidden="true">
+                    <div class="form-outline mb-4">
+                        <textarea class="form-control bg-light text-black" id="text-input" rows="2"></textarea>
+                        <label class="form-label text-black" for="text-input">Enter chat text here</label>
+                    </div>
+                    <div class="form-outline mb-4">
+                        <input type="text" name="roomNumber" id="message-room-number" class="form-control" value="{{ .RoomNumber }}" hidden="true"/>
+                        <label class="form-label text-black" for="message-room-number" hidden="true">Room number</label>
+                    </div>
+                    <div class="form-outline mb-4">
+                        <input type="text" name="nickName" id="message-nick-name" class="form-control" value="{{ .UserName }}" hidden="true"/>
+                        <label class="form-label text-black" for="message-nick-name" hidden="true">Nickname</label>
+                    </div>
+                    <button id="text-send" type="submit" class="btn btn-primary btn-block mb-4">Send</button>
+                </form>
+                <div class="container overflow-auto p-3" id="chat-text" hidden="true" style="max-height: 500px;"></div> 
+            </div>
+        </div>
        <script type="text/javascript" src="/static/js/chat.js"></script>
+       <script type="text/javascript" src="/static/js/mdb.min.js"></script>
     </body>
 </html>
