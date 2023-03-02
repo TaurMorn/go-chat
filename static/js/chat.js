@@ -15,9 +15,25 @@ window.addEventListener("DOMContentLoaded", (_) => {
             let msg =  JSON.stringify({
                 RoomNumber: hiddenRoomNumber.value,
                 UserName: nickName.value,
-                Message: "Hello, blah-blah-blah"
+                Message: "Hello, blah-blah-blah", 
+                Ping: true
               });
             websocket.send(msg);
+        });
+        websocket.addEventListener("message", (event) => {
+            let msg = JSON.parse(event.data);
+            console.log(msg);
+            if (msg.Ping === true){
+                setTimeout(() => websocket.send(
+                    JSON.stringify({
+                        RoomNumber: hiddenRoomNumber.value,
+                        UserName: nickName.value,
+                        Message: "blip-blop",
+                        Ping: true
+                    })
+                ), 10000);
+            return;
+            }
         });
 
         textArea.focus();
