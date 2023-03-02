@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"os"
 
@@ -19,6 +20,7 @@ type Chat struct {
 	RoomNumber string
 	UserName   string
 	Message    string
+	Ping       bool
 }
 
 func main() {
@@ -57,6 +59,22 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 			fmt.Println(err)
 			break
 		}
+		if msg.Ping {
+			messageToClient(conn, msg)
+		}
 		fmt.Println(msg)
 	}
+}
+
+func messageToClient(conn *websocket.Conn, msg Chat) {
+	msg.Message = "From Server"
+	err := conn.WriteJSON(msg)
+	if err != nil && unsafeError(err) {
+		conn.Close()
+	}
+
+}
+
+func unsafeError(err error) bool {
+	return !websocket.IsCloseError(err, websocket.CloseGoingAway) && err != io.EOF
 }
