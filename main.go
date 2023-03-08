@@ -23,6 +23,9 @@ type Chat struct {
 	Ping       bool
 }
 
+var messages chan Chat = make(chan Chat)
+var savedConnections map[*websocket.Conn]bool = make(map[*websocket.Conn]bool)
+
 func main() {
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
@@ -33,6 +36,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
 	http.HandleFunc("/chat", chat)
 	http.HandleFunc("/websocket", handleConnections)
+	go handleMessages()
 	http.ListenAndServe(":"+port, nil)
 }
 
@@ -56,23 +60,39 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 		var msg Chat
 		err := conn.ReadJSON(&msg)
 		if err != nil {
+			savedConnections[conn] = false
 			fmt.Println(err)
 			break
 		}
 		if msg.Ping {
+			if savedConnections[conn] == false {
+				savedConnections[conn] = true
+			}
 			messageToClient(conn, msg)
+		} else {
+			messages <- msg
 		}
+	}
+}
+
+func handleMessages() {
+	for {
+		msg := <-messages
 		fmt.Println(msg)
+		for conn, exists := range savedConnections {
+			if exists {
+				messageToClient(conn, msg)
+			}
+		}
 	}
 }
 
 func messageToClient(conn *websocket.Conn, msg Chat) {
-	msg.Message = "From Server"
 	err := conn.WriteJSON(msg)
 	if err != nil && unsafeError(err) {
+		savedConnections[conn] = false
 		conn.Close()
 	}
-
 }
 
 func unsafeError(err error) bool {

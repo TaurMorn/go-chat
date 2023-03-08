@@ -1,7 +1,8 @@
 let hiddenRoomNumber = document.getElementById("message-room-number");
 let roomForm = document.getElementById("room-form");
 let messageForm = document.getElementById("message-form");
-let textArea = document.getElementById ("text-input");
+let textArea = document.getElementById("text-input");
+let nickName = document.getElementById("message-nick-name");
 let websocket = null;
 
 window.addEventListener("DOMContentLoaded", (_) => {
@@ -12,30 +13,43 @@ window.addEventListener("DOMContentLoaded", (_) => {
         messageForm.hidden = false;
 
         websocket.addEventListener("open", (event) => {
-            let msg =  JSON.stringify({
-                RoomNumber: hiddenRoomNumber.value,
-                UserName: nickName.value,
-                Message: "Hello, blah-blah-blah", 
-                Ping: true
-              });
-            websocket.send(msg);
+            sendMessage("Hello, blah-blah-blah", true);
         });
         websocket.addEventListener("message", (event) => {
             let msg = JSON.parse(event.data);
             console.log(msg);
             if (msg.Ping === true){
-                setTimeout(() => websocket.send(
-                    JSON.stringify({
-                        RoomNumber: hiddenRoomNumber.value,
-                        UserName: nickName.value,
-                        Message: "blip-blop",
-                        Ping: true
-                    })
-                ), 10000);
-            return;
+                setTimeout(() => {sendMessage("blip-blop", true);}, 10000);
+            } else {
+                console.log(msg);
             }
         });
-
         textArea.focus();
     }
 } );
+
+messageForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    sendMessage(textArea.value, false)
+    textArea.value = "";
+    textArea.focus();
+});
+
+messageForm.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage(textArea.value, false)
+        textArea.value = "";
+        textArea.focus();
+    }
+});
+
+function sendMessage(text, ping) {
+    websocket.send(
+        JSON.stringify({
+            RoomNumber: hiddenRoomNumber.value,
+            UserName: nickName.value,
+            Message: text,
+            Ping: ping
+        }));
+}
