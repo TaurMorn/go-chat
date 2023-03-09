@@ -60,7 +60,7 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 		var msg Chat
 		err := conn.ReadJSON(&msg)
 		if err != nil {
-			savedConnections[conn] = false
+			delete(savedConnections, conn)
 			fmt.Println(err)
 			break
 		}
@@ -90,7 +90,7 @@ func handleMessages() {
 func messageToClient(conn *websocket.Conn, msg Chat) {
 	err := conn.WriteJSON(msg)
 	if err != nil && unsafeError(err) {
-		savedConnections[conn] = false
+		delete(savedConnections, conn)
 		conn.Close()
 	}
 }

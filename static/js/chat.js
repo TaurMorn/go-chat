@@ -4,6 +4,7 @@ let messageForm = document.getElementById("message-form");
 let textArea = document.getElementById("text-input");
 let nickName = document.getElementById("message-nick-name");
 let websocket = null;
+let chatDiv = document.getElementById("chat-text");
 
 window.addEventListener("DOMContentLoaded", (_) => {
     if (hiddenRoomNumber.value) {
@@ -11,7 +12,8 @@ window.addEventListener("DOMContentLoaded", (_) => {
         websocket = new WebSocket(protocol + "//" + window.location.host + "/websocket");
         roomForm.hidden = true;
         messageForm.hidden = false;
-
+        chatDiv.hidden = false;
+        
         websocket.addEventListener("open", (event) => {
             sendMessage("Hello, blah-blah-blah", true);
         });
@@ -21,7 +23,35 @@ window.addEventListener("DOMContentLoaded", (_) => {
             if (msg.Ping === true){
                 setTimeout(() => {sendMessage("blip-blop", true);}, 10000);
             } else {
-                console.log(msg);
+                let divMsg = document.createElement("div");
+                let divInner = document.createElement("div");
+                let strong = document.createElement("strong");
+                
+                strong.className = "text-primary";
+                divInner.append(strong);
+                //let msgArray = msg.Message.match(/.{1,42}/g);
+                /*
+                for (let i = 0; i < msgArray.length; i++){
+                    divInner.append(msgArray[i]);
+                }
+                */
+                divInner.append (msg.Message);
+                let currentTime = new Date().toLocaleTimeString();
+                
+                if (msg.UserName === nickName.value) {
+                    strong.innerHTML = `<b>Me, </b><i>${currentTime}</i><br>`;
+                    divInner.className = "text-black p-2 rounded-8";
+                    divInner.style = "background-color:#DCEDC8; max-width: 500px";
+                    divMsg.className = "d-flex flex-row-reverse";
+                }else {
+                    strong.innerHTML = `<b>${msg.UserName}, </b><i>${currentTime}</i><br>`;
+                    divInner.className = "text-black p-2 rounded-8 bg-light";
+                    divInner.style = "max-width: 500px";
+                    divMsg.className = "d-flex flex-row";   
+                }
+                divMsg.append(divInner);
+                chatDiv.append(divMsg);
+                chatDiv.scrollTop = chatDiv.scrollHeight;
             }
         });
         textArea.focus();
