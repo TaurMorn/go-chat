@@ -29,26 +29,23 @@ window.addEventListener("DOMContentLoaded", (_) => {
                 
                 strong.className = "text-primary";
                 divInner.append(strong);
-                //let msgArray = msg.Message.match(/.{1,42}/g);
-                /*
-                for (let i = 0; i < msgArray.length; i++){
-                    divInner.append(msgArray[i]);
-                }
-                */
+                
                 divInner.append (msg.Message);
+
                 let currentTime = new Date().toLocaleTimeString();
                 
                 if (msg.UserName === nickName.value) {
                     strong.innerHTML = `<b>Me, </b><i>${currentTime}</i><br>`;
                     divInner.className = "text-black p-2 rounded-8";
-                    divInner.style = "background-color:#DCEDC8; max-width: 500px";
+                    divInner.style = "max-width: 600px; background-color:#DCEDC8; word-break:break-all;";
                     divMsg.className = "d-flex flex-row-reverse";
                 }else {
                     strong.innerHTML = `<b>${msg.UserName}, </b><i>${currentTime}</i><br>`;
                     divInner.className = "text-black p-2 rounded-8 bg-light";
-                    divInner.style = "max-width: 500px";
+                    divInner.style = "background-color:#cceeea; word-break:break-all; max-width:600px;";
                     divMsg.className = "d-flex flex-row";   
                 }
+                divMsg.style = "margin-bottom: 9px;";
                 divMsg.append(divInner);
                 chatDiv.append(divMsg);
                 chatDiv.scrollTop = chatDiv.scrollHeight;
