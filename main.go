@@ -23,8 +23,10 @@ type Chat struct {
 	Ping       bool
 }
 
+var roomToClients = make(map[string]map[*websocket.Conn]bool)
+var clientsToRooms = make(map[*websocket.Conn]string)
+
 var messages chan Chat = make(chan Chat)
-var savedConnections map[*websocket.Conn]bool = make(map[*websocket.Conn]bool)
 
 func main() {
 	port := os.Getenv("PORT")
@@ -60,13 +62,24 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 		var msg Chat
 		err := conn.ReadJSON(&msg)
 		if err != nil {
-			delete(savedConnections, conn)
+			room := clientsToRooms[conn]
+			delete(roomToClients[room], conn)
+			delete(clientsToRooms, conn)
 			fmt.Println(err)
 			break
 		}
 		if msg.Ping {
-			if savedConnections[conn] == false {
-				savedConnections[conn] = true
+			if clientsToRooms[conn] == "" {
+				room := msg.RoomNumber
+				clientsInRoom := roomToClients[room]
+				if clientsInRoom == nil {
+					roomToClients[room] = make(map[*websocket.Conn]bool)
+					clientsInRoom = roomToClients[room]
+				}
+				if clientsInRoom[conn] == false {
+					clientsInRoom[conn] = true
+				}
+				clientsToRooms[conn] = room
 			}
 			messageToClient(conn, msg)
 		} else {
@@ -78,8 +91,7 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 func handleMessages() {
 	for {
 		msg := <-messages
-		fmt.Println(msg)
-		for conn, exists := range savedConnections {
+		for conn, exists := range roomToClients[msg.RoomNumber] {
 			if exists {
 				messageToClient(conn, msg)
 			}
@@ -90,7 +102,9 @@ func handleMessages() {
 func messageToClient(conn *websocket.Conn, msg Chat) {
 	err := conn.WriteJSON(msg)
 	if err != nil && unsafeError(err) {
-		delete(savedConnections, conn)
+		room := clientsToRooms[conn]
+		delete(roomToClients[room], conn)
+		delete(clientsToRooms, conn)
 		conn.Close()
 	}
 }
