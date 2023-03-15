@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  dragon-lair-chat:
+    restart: always
+    build: .
+    ports:
+      - 7242:8080

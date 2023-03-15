@@ -21,10 +21,13 @@ type Chat struct {
 	UserName   string
 	Message    string
 	Ping       bool
+	Error      string
 }
 
 var roomToClients = make(map[string]map[*websocket.Conn]bool)
 var clientsToRooms = make(map[*websocket.Conn]string)
+var roomsToUsers = make(map[string]map[string]bool)
+var clientsToUsers = make(map[*websocket.Conn]string)
 
 var messages chan Chat = make(chan Chat)
 
@@ -36,10 +39,15 @@ func main() {
 
 	fileServer := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	http.HandleFunc("/", ping)
 	http.HandleFunc("/chat", chat)
 	http.HandleFunc("/websocket", handleConnections)
 	go handleMessages()
 	http.ListenAndServe(":"+port, nil)
+}
+
+func ping(writer http.ResponseWriter, request *http.Request) {
+	fmt.Fprint(writer, "{\"status\": \"UP\"}")
 }
 
 func chat(writer http.ResponseWriter, request *http.Request) {
@@ -48,6 +56,20 @@ func chat(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == "POST" {
 		roomNumber := request.FormValue("roomNumber")
 		nickName := request.FormValue("nickName")
+		existingUsers := roomsToUsers[roomNumber]
+		if existingUsers == nil {
+			roomsToUsers[roomNumber] = make(map[string]bool)
+			roomsToUsers[roomNumber][nickName] = true
+		} else {
+			existingUser := roomsToUsers[roomNumber][nickName]
+			if existingUser {
+				errorMsg := fmt.Sprintf("The user [%s] already exists inside room [%s]", nickName, roomNumber)
+				template.Execute(writer, Chat{Error: errorMsg})
+				return
+			} else {
+				roomsToUsers[roomNumber][nickName] = true
+			}
+		}
 		template.Execute(writer, Chat{RoomNumber: roomNumber, UserName: nickName})
 	} else {
 		template.Execute(writer, Chat{})
