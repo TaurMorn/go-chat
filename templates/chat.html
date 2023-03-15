@@ -4,11 +4,17 @@
         <meta charset="UTF-8">
         <title>Dragon's Lair</title>
         <link rel="stylesheet" href="/static/css/mdb.min.css"/>
+        <link rel="icon" href="/static/images/logo.png"/>
     </head>
     <body>
         <div class="bg-image" style="background-image: url('/static/images/chat.jpg'); height: 100vh;">
             <div class="container">
                 <div class="p-3 mb-0 text-black text-center" style = "background-color:#31a396;">
+                    {{if .Error}}
+                    <div class="form-outline mb-4 bg-danger">
+                        <strong>{{ .Error }}</strong>
+                    </div>
+                    {{ end }}                    
                     {{if .RoomNumber}}
                     <h2><strong><b>Room number: </b></strong><b class="text-primary">{{ .RoomNumber }}</b></h2><h2><strong><b>User: </b></strong><b class="text-primary">{{ .UserName }}</b></h2>
                     {{ else }}<h2 class="text-primary"><b>Choose your room number and nickname</b></h2>
@@ -37,7 +43,7 @@
                     <div class="form-outline mb-4">
                         <input type="text" name="nickName" id="message-nick-name" class="form-control" value="{{ .UserName }}" hidden="true"/>
                         <label class="form-label text-black" for="message-nick-name" hidden="true">Nickname</label>
-                    </div>
+                    </div>                  
                     <button id="text-send" type="submit" class="btn btn-primary btn-block mb-4">Send</button>
                 </form>
                 <div class="container overflow-auto p-3" id="chat-text" hidden="true" style="max-height: 500px;"></div> 
