@@ -5,6 +5,7 @@ let textArea = document.getElementById("text-input");
 let nickName = document.getElementById("message-nick-name");
 let websocket = null;
 let chatDiv = document.getElementById("chat-text");
+let cooldynamicDiv = document.getElementById("dynamicDiv");
 
 window.addEventListener("DOMContentLoaded", (_) => {
     if (hiddenRoomNumber.value) {
@@ -13,6 +14,7 @@ window.addEventListener("DOMContentLoaded", (_) => {
         roomForm.hidden = true;
         messageForm.hidden = false;
         chatDiv.hidden = false;
+        cooldynamicDiv.className = "p-3 mb-0 text-black text-center";
         
         websocket.addEventListener("open", (event) => {
             sendMessage("Hello, blah-blah-blah", true);
@@ -35,14 +37,14 @@ window.addEventListener("DOMContentLoaded", (_) => {
                 let currentTime = new Date().toLocaleTimeString();
                 
                 if (msg.UserName === nickName.value) {
-                    strong.innerHTML = `<b>Me, </b><i>${currentTime}</i><br>`;
+                    strong.innerHTML = `<b style="color: #03453d;">Me, </b><i style="color: #03453d;">${currentTime}</i><br>`;
                     divInner.className = "text-black p-2 rounded-8";
-                    divInner.style = "max-width: 600px; background-color:#DCEDC8; word-break:break-all;";
+                    divInner.style = "max-width: 600px; background-color:#84d9cf; word-break:break-all;";
                     divMsg.className = "d-flex flex-row-reverse";
                 }else {
-                    strong.innerHTML = `<b>${msg.UserName}, </b><i>${currentTime}</i><br>`;
+                    strong.innerHTML = `<b style="color: #03453d;">${msg.UserName}, </b><i style="color: #03453d;">${currentTime}</i><br>`;
                     divInner.className = "text-black p-2 rounded-8 bg-light";
-                    divInner.style = "background-color:#cceeea; word-break:break-all; max-width:600px;";
+                    divInner.style = "word-break:break-all; max-width:600px;";
                     divMsg.className = "d-flex flex-row";   
                 }
                 divMsg.style = "margin-bottom: 9px;";

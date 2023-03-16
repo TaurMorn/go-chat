@@ -5,19 +5,14 @@
         <title>Dragon's Lair</title>
         <link rel="stylesheet" href="/static/css/mdb.min.css"/>
         <link rel="icon" href="/static/images/logo.png"/>
-    </head>
+    </head> 
     <body>
-        <div class="bg-image" style="background-image: url('/static/images/chat.jpg'); height: 100vh;">
+        <div class="bg-image" style="background-image: url('/static/images/chat.png'); height: 100vh;">
             <div class="container">
-                <div class="p-3 mb-0 text-black text-center" style = "background-color:#31a396;">
-                    {{if .Error}}
-                    <div class="form-outline mb-4 bg-danger">
-                        <strong>{{ .Error }}</strong>
-                    </div>
-                    {{ end }}                    
+                <div id="dynamicDiv" class="p-3 mb-0 text-black text-center rounded-8" style = "background-color:#31a396;">                  
                     {{if .RoomNumber}}
-                    <h2><strong><b>Room number: </b></strong><b class="text-primary">{{ .RoomNumber }}</b></h2><h2><strong><b>User: </b></strong><b class="text-primary">{{ .UserName }}</b></h2>
-                    {{ else }}<h2 class="text-primary"><b>Choose your room number and nickname</b></h2>
+                    <h3><b>Room number: </b><b style="color:#03453d">{{ .RoomNumber }}</b></h3><h3><b>User: </b><b style="color:#03453d">{{ .UserName }}</b></h3>
+                    {{ else }}<h3 style="color:#03453d"><b>Choose your room number and nickname</b></h3>
                     {{ end }}
                     <form id ="room-form" class="text-center border border-light p-5" action="/chat" method="POST">
                         <div class="form-outline mb-4 bg-light text-black">
@@ -29,6 +24,11 @@
                             <label class="form-label text-black" for="nickName">Nickname</label>
                         </div>
                         <button id="roomButton" type="submit" class="btn btn-primary btn-block">Log in</button>
+                        {{if .Error}}
+                        <div class="form-outline mb-4 bg-danger rounded-8" style="margin-top: 12px;">
+                            <strong>{{ .Error }}</strong>
+                        </div>
+                        {{ end }}  
                     </form>  
                 </div>
                 <form id="message-form" hidden="true">

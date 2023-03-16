@@ -56,6 +56,21 @@ func chat(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == "POST" {
 		roomNumber := request.FormValue("roomNumber")
 		nickName := request.FormValue("nickName")
+		chat := Chat{RoomNumber: roomNumber, UserName: nickName}
+		if len(roomNumber) > 20 {
+			errorMsg := fmt.Sprintf("The room name %s is too long", roomNumber)
+			chat.RoomNumber = ""
+			chat.Error = errorMsg
+			template.Execute(writer, chat)
+			return
+		}
+		if len(nickName) > 20 {
+			errorMsg := fmt.Sprintf("The nick name %s is too long", nickName)
+			chat.RoomNumber = ""
+			chat.Error = errorMsg
+			template.Execute(writer, chat)
+			return
+		}
 		existingUsers := roomsToUsers[roomNumber]
 		if existingUsers == nil {
 			roomsToUsers[roomNumber] = make(map[string]bool)
@@ -63,14 +78,14 @@ func chat(writer http.ResponseWriter, request *http.Request) {
 		} else {
 			existingUser := roomsToUsers[roomNumber][nickName]
 			if existingUser {
-				errorMsg := fmt.Sprintf("The user [%s] already exists inside room [%s]", nickName, roomNumber)
-				template.Execute(writer, Chat{Error: errorMsg})
-				return
+				errorMsg := fmt.Sprintf("The user %s already exists inside room %s", nickName, roomNumber)
+				chat.RoomNumber = ""
+				chat.Error = errorMsg
 			} else {
 				roomsToUsers[roomNumber][nickName] = true
 			}
 		}
-		template.Execute(writer, Chat{RoomNumber: roomNumber, UserName: nickName})
+		template.Execute(writer, chat)
 	} else {
 		template.Execute(writer, Chat{})
 	}
@@ -84,9 +99,7 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 		var msg Chat
 		err := conn.ReadJSON(&msg)
 		if err != nil {
-			room := clientsToRooms[conn]
-			delete(roomToClients[room], conn)
-			delete(clientsToRooms, conn)
+			clientClear(conn)
 			fmt.Println(err)
 			break
 		}
@@ -102,6 +115,7 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 					clientsInRoom[conn] = true
 				}
 				clientsToRooms[conn] = room
+				clientsToUsers[conn] = msg.UserName
 			}
 			messageToClient(conn, msg)
 		} else {
@@ -124,13 +138,20 @@ func handleMessages() {
 func messageToClient(conn *websocket.Conn, msg Chat) {
 	err := conn.WriteJSON(msg)
 	if err != nil && unsafeError(err) {
-		room := clientsToRooms[conn]
-		delete(roomToClients[room], conn)
-		delete(clientsToRooms, conn)
+		clientClear(conn)
 		conn.Close()
 	}
 }
 
 func unsafeError(err error) bool {
 	return !websocket.IsCloseError(err, websocket.CloseGoingAway) && err != io.EOF
+}
+
+func clientClear(conn *websocket.Conn) {
+	room := clientsToRooms[conn]
+	user := clientsToUsers[conn]
+	delete(roomsToUsers[room], user)
+	delete(clientsToUsers, conn)
+	delete(roomToClients[room], conn)
+	delete(clientsToRooms, conn)
 }
