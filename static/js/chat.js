@@ -100,10 +100,8 @@ function getUserNameColorByName(userName) {
         }
         let index = getRandomInt(userColorsAvailable.length);
         let colorFromArray = userColorsAvailable[index];
-        console.log(userColorsAvailable);
         mapUserNameToColor.set(userName, colorFromArray);
         userColorsAvailable.splice(index, 1);
-        console.log(userColorsAvailable);
         return colorFromArray;
     }
 }
