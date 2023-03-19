@@ -6,10 +6,13 @@ let nickName = document.getElementById("message-nick-name");
 let websocket = null;
 let chatDiv = document.getElementById("chat-text");
 let cooldynamicDiv = document.getElementById("dynamicDiv");
+let roomNumber = document.getElementById("roomNumber");
 
 const userColors = ["#AD7670", "#AD8A6E", "#ADA56F", "#99AD6F", "#76AD6F", "#6DAD8B", "#6DADAA", "#6C8DAD", "#6B6DAD", "#906AAD", "#AD69A7", "#AD6779"];
 let userColorsAvailable = ["#AD7670", "#AD8A6E", "#ADA56F", "#99AD6F", "#76AD6F", "#6DAD8B", "#6DADAA", "#6C8DAD", "#6B6DAD", "#906AAD", "#AD69A7", "#AD6779"];
 let mapUserNameToColor = new Map();
+
+const pingText = "blip-blop";
 
 window.addEventListener("DOMContentLoaded", (_) => {
     if (hiddenRoomNumber.value) {
@@ -21,12 +24,31 @@ window.addEventListener("DOMContentLoaded", (_) => {
         cooldynamicDiv.className = "p-3 mb-0 text-black text-center";
         
         websocket.addEventListener("open", (event) => {
-            sendMessage("Hello, blah-blah-blah", true);
+            sendMessage(pingText, true);
         });
         websocket.addEventListener("message", (event) => {
             let msg = JSON.parse(event.data);
             if (msg.Ping === true){
-                setTimeout(() => {sendMessage("blip-blop", true);}, 10000);
+                if (msg.Message && !(pingText === msg.Message)) {
+                    let divMsg = document.createElement("div");
+                    let divInner = document.createElement("div");
+                    let strong = document.createElement("strong");
+                    strong.className = "text-primary";
+
+                    let userNameColor = getUserNameColorByName(msg.UserName);
+                    strong.innerHTML = `<b style="color: ${userNameColor};">${msg.Message}</b>`;
+                    divInner.className = "text-black p-2 rounded-8 bg-light";
+                    divInner.style = "word-break:break-all; max-width:600px;";
+                    divMsg.className = "d-flex flex-row";
+                    divMsg.style = "margin-bottom: 9px;";
+
+                    divInner.append(strong);
+                    divMsg.append(divInner);
+                    chatDiv.append(divMsg);
+                    chatDiv.scrollTop = chatDiv.scrollHeight;                    
+                } else {
+                    setTimeout(() => {sendMessage(pingText, true);}, 10000);
+                }
             } else {
                 let divMsg = document.createElement("div");
                 let divInner = document.createElement("div");
@@ -58,6 +80,8 @@ window.addEventListener("DOMContentLoaded", (_) => {
             }
         });
         textArea.focus();
+    } else {
+        roomNumber.focus();
     }
 } );
 
@@ -78,6 +102,9 @@ messageForm.addEventListener("keypress", (event) => {
 });
 
 function sendMessage(text, ping) {
+    if (text === "" || text.trim() === "") {
+      return;
+    } else {
     websocket.send(
         JSON.stringify({
             RoomNumber: hiddenRoomNumber.value,
@@ -85,6 +112,7 @@ function sendMessage(text, ping) {
             Message: text,
             Ping: ping
         }));
+    }
 }
 
 function getRandomInt(max) {

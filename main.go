@@ -124,8 +124,12 @@ func handleConnections(writer http.ResponseWriter, request *http.Request) {
 				}
 				clientsToRooms[conn] = room
 				clientsToUsers[conn] = msg.UserName
+				messageToClient(conn, msg)
+				msg.Message = fmt.Sprintf("%s connected to chat", msg.UserName)
+				messages <- msg
+			} else {
+				messageToClient(conn, msg)
 			}
-			messageToClient(conn, msg)
 		} else {
 			messages <- msg
 		}
@@ -162,4 +166,7 @@ func clientClear(conn *websocket.Conn) {
 	delete(clientsToUsers, conn)
 	delete(roomToClients[room], conn)
 	delete(clientsToRooms, conn)
+	msg := fmt.Sprintf("%s disconnected from chat", user)
+	chatMsg := Chat{RoomNumber: room, UserName: user, Message: msg, Ping: true}
+	messages <- chatMsg
 }
