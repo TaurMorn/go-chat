@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -54,9 +55,16 @@ func chat(writer http.ResponseWriter, request *http.Request) {
 	template := template.Must(template.ParseFiles("templates/chat.html"))
 
 	if request.Method == "POST" {
-		roomNumber := request.FormValue("roomNumber")
-		nickName := request.FormValue("nickName")
+		roomNumber := strings.TrimSpace(request.FormValue("roomNumber"))
+		nickName := strings.TrimSpace(request.FormValue("nickName"))
 		chat := Chat{RoomNumber: roomNumber, UserName: nickName}
+		if len(nickName) == 0 {
+			errorMsg := fmt.Sprintf("The nick name %s is too short", nickName)
+			chat.RoomNumber = ""
+			chat.Error = errorMsg
+			template.Execute(writer, chat)
+			return
+		}
 		if len(roomNumber) > 20 {
 			errorMsg := fmt.Sprintf("The room name %s is too long", roomNumber)
 			chat.RoomNumber = ""
