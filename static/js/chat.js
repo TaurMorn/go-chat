@@ -7,6 +7,10 @@ let websocket = null;
 let chatDiv = document.getElementById("chat-text");
 let cooldynamicDiv = document.getElementById("dynamicDiv");
 
+const userColors = ["#AD7670", "#AD8A6E", "#ADA56F", "#99AD6F", "#76AD6F", "#6DAD8B", "#6DADAA", "#6C8DAD", "#6B6DAD", "#906AAD", "#AD69A7", "#AD6779"];
+let userColorsAvailable = ["#AD7670", "#AD8A6E", "#ADA56F", "#99AD6F", "#76AD6F", "#6DAD8B", "#6DADAA", "#6C8DAD", "#6B6DAD", "#906AAD", "#AD69A7", "#AD6779"];
+let mapUserNameToColor = new Map();
+
 window.addEventListener("DOMContentLoaded", (_) => {
     if (hiddenRoomNumber.value) {
         let protocol = location.protocol === "http:" ? "ws:" : "wss:" ;
@@ -21,7 +25,6 @@ window.addEventListener("DOMContentLoaded", (_) => {
         });
         websocket.addEventListener("message", (event) => {
             let msg = JSON.parse(event.data);
-            console.log(msg);
             if (msg.Ping === true){
                 setTimeout(() => {sendMessage("blip-blop", true);}, 10000);
             } else {
@@ -42,7 +45,8 @@ window.addEventListener("DOMContentLoaded", (_) => {
                     divInner.style = "max-width: 600px; background-color:#84d9cf; word-break:break-all;";
                     divMsg.className = "d-flex flex-row-reverse";
                 }else {
-                    strong.innerHTML = `<b style="color: #03453d;">${msg.UserName}, </b><i style="color: #03453d;">${currentTime}</i><br>`;
+                    let userNameColor = getUserNameColorByName(msg.UserName);
+                    strong.innerHTML = `<b style="color: ${userNameColor};">${msg.UserName}, </b><i style="color: ${userNameColor};">${currentTime}</i><br>`;
                     divInner.className = "text-black p-2 rounded-8 bg-light";
                     divInner.style = "word-break:break-all; max-width:600px;";
                     divMsg.className = "d-flex flex-row";   
@@ -81,4 +85,25 @@ function sendMessage(text, ping) {
             Message: text,
             Ping: ping
         }));
+}
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+}
+
+function getUserNameColorByName(userName) {
+    if (mapUserNameToColor.has(userName)) {
+        return mapUserNameToColor.get(userName);
+    } else {
+        if (userColorsAvailable.length === 0) {
+            userColorsAvailable = userColors;
+        }
+        let index = getRandomInt(userColorsAvailable.length);
+        let colorFromArray = userColorsAvailable[index];
+        console.log(userColorsAvailable);
+        mapUserNameToColor.set(userName, colorFromArray);
+        userColorsAvailable.splice(index, 1);
+        console.log(userColorsAvailable);
+        return colorFromArray;
+    }
 }
